@@ -1,0 +1,21 @@
+Using pre-set license
+Built from '2020.3/staging' branch; Version is '2020.3.22f1 (e1a7f79fd887) revision 14788599'; Using compiler version '192528614'; Build Type 'Release'
+OS: 'Windows 10 Enterprise; OS build 18363.2094; Version 1909; 64bit' Language: 'fr' Physical Memory: 16035 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1, IsPro: 0
+
+COMMAND LINE ARGUMENTS:
+D:\__TOOLS\Unity\2020\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker0
+-projectPath
+D:/__REPO/GITHUB/unity_ProgrammingTechniquesAndPatterns/BuildingAGraph
+-logFile
+Logs/AssetImportWorker0.log
+-srvPort
+64666
+Successfully changed project path to: D:/__REPO/GITHUB/unity_ProgrammingTechniquesAndPatterns/BuildingAGraph
+D:/__REPO/GITHUB/unity_ProgrammingTechniquesAndPatterns/BuildingAGraph
+Using Asset Import Pipeline V2.
