@@ -24,19 +24,19 @@ public class Clock : MonoBehaviour
         private const float SecondsToDegree = -6f;
         
         /// <summary>
-        /// Instance variable <c>hoursPivot</c> represents a Unity <c>Transform</c> structure representing position, rotation and scale of the hour hand pivot point of the clock.
+        /// Instance variable <c>hoursPivot</c> is a Unity <c>Transform</c> structure representing position, rotation and scale of the hour hand pivot point of the clock.
         /// </summary>
         [SerializeField]
         private Transform hoursPivot;
 
         /// <summary>
-        /// Instance variable <c>minutesPivot</c> represents a Unity <c>Transform</c> structure representing position, rotation and scale of the minute hand pivot point of the clock.
+        /// Instance variable <c>minutesPivot</c> is a Unity <c>Transform</c> structure representing position, rotation and scale of the minute hand pivot point of the clock.
         /// </summary>
         [SerializeField] 
         private Transform minutesPivot;
 
         /// <summary>
-        /// Instance variable <c>secondsPivot</c> represents a Unity <c>Transform</c> structure representing position, rotation and scale of the second hand pivot point of the clock.
+        /// Instance variable <c>secondsPivot</c> is a Unity <c>Transform</c> structure representing position, rotation and scale of the second hand pivot point of the clock.
         /// </summary>
         [SerializeField] 
         private Transform secondsPivot;
