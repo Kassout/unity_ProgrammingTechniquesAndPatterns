@@ -44,9 +44,9 @@ public class Clock : MonoBehaviour
         #endregion
 
         #region MonoBehavior
-        
+
         /// <summary>
-        /// This method is called once per frame
+        /// Update is called every frame, if the MonoBehaviour is enabled.
         /// </summary>
         private void Update()
         {
