@@ -15,7 +15,13 @@ D:/__REPO/GITHUB/unity_ProgrammingTechniquesAndPatterns/BuildingAGraph
 -logFile
 Logs/AssetImportWorker1.log
 -srvPort
-64666
+53322
 Successfully changed project path to: D:/__REPO/GITHUB/unity_ProgrammingTechniquesAndPatterns/BuildingAGraph
 D:/__REPO/GITHUB/unity_ProgrammingTechniquesAndPatterns/BuildingAGraph
 Using Asset Import Pipeline V2.
+Refreshing native plugins compatible for Editor in 270.97 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 2020.3.22f1 (e1a7f79fd887)
+[Subsystems] Discovering subsystems at path D:/__TOOLS/Unity/2020/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path D:/__REPO/GITHUB/unity_ProgrammingTechniquesAndPatterns/BuildingAGraph/Assets
+GfxDevice: creating device client; threaded=0
