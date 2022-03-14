@@ -7,14 +7,14 @@ using static UnityEngine.Mathf;
 public static class FunctionLibrary
 {
     #region Fields / Properties
-    
+
     /// <summary>
     /// Instance variable <c>Function</c> represents a reference to a graph wave shape computer function.
     /// </summary>
     public delegate Vector3 Function(float u, float v, float t);
 
     /// <summary>
-    /// Instance variable <c>FunctionName</c> represents an enumeration of the different graph wave shape computer function's name available.
+    /// Enumeration variable <c>FunctionName</c> representing the different graph wave shape computer function's name available.
     /// </summary>
     public enum FunctionName { Wave, MultiWave, Ripple, Sphere, Torus }
 

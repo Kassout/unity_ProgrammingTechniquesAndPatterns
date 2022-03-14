@@ -5,6 +5,8 @@ using UnityEngine;
 /// </summary>
 public class Graph : MonoBehaviour
 {
+    #region Fields / Properties
+
     /// <summary>
     /// Instance variable <c>pointPrefab</c> is a Unity <c>Transform</c> structure representing position, rotation and scale of the point pre-fabricated object.
     /// </summary>
@@ -27,6 +29,10 @@ public class Graph : MonoBehaviour
     /// Instance variable <c>points</c> is an array of Unity <c>Transform</c> structures representing the position, rotation and scale of the displayed graph points.
     /// </summary>
     private Transform[] points;
+
+    #endregion
+
+    #region MonoBehavior
 
     /// <summary>
     /// Awake is called when the script instance is being loaded.
@@ -73,4 +79,6 @@ public class Graph : MonoBehaviour
             points[i].localPosition = f(u, v, time);
         }
     }
+
+    #endregion
 }
