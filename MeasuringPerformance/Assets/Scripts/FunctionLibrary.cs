@@ -6,6 +6,8 @@ using static UnityEngine.Mathf;
 /// </summary>
 public static class FunctionLibrary
 {
+    #region Fields / Properties
+    
     /// <summary>
     /// Instance variable <c>Function</c> represents a reference to a graph wave shape computer function.
     /// </summary>
@@ -20,6 +22,10 @@ public static class FunctionLibrary
     /// Instance variable <c>functions</c> is an Array of <c>Function</c> representing the different graph wave shape computer functions.
     /// </summary>
     private static Function[] functions = { Wave, MultiWave, Ripple, Sphere, Torus };
+
+    #endregion
+
+    #region Public
 
     /// <summary>
     /// This function is used to get the function associated to the index of the given entry value.
@@ -120,4 +126,6 @@ public static class FunctionLibrary
         p.z = s * Cos(PI * u);
         return p;
     }
+
+    #endregion
 }
