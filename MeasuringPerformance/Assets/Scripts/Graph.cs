@@ -23,12 +23,34 @@ public class Graph : MonoBehaviour
     /// Instance variable <c>function</c> represents the selection name associated with a wave function to use for the graph.
     /// </summary>
     [SerializeField]
-    private FunctionLibrary.FunctionName function;
+    private FunctionLibrary.FunctionName function = default;
+
+    /// <summary>
+    /// Enumeration variable <c>TransitionMode</c> representing the different graph transition mode available.
+    /// </summary>
+    public enum TransitionMode { Cycle, Random };
+
+    /// <summmary>
+    /// Instance variable <c>transitionMode</c> represents the graph transition mode name currently selected.
+    /// </summary>
+    [SerializeField]
+    private TransitionMode transitionMode;
+
+    /// <summmary>
+    /// Instance variable <c>functionDuration</c> represents the duration value of the function to display.
+    /// </summary>
+    [SerializeField, Min(0f)]
+    private float functionDuration = 1f;
 
     /// <summary>
     /// Instance variable <c>points</c> is an array of Unity <c>Transform</c> structures representing the position, rotation and scale of the displayed graph points.
     /// </summary>
     private Transform[] points;
+
+    /// <summary>
+    /// Instance variable <c>duration</c> represents the current displayed duration value of the graph function.
+    /// </summary>
+    private float duration;
 
     #endregion
 
@@ -63,6 +85,24 @@ public class Graph : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        duration += Time.deltaTime;
+        if (duration >= functionDuration)
+        {
+            duration -= functionDuration;
+            PickNextFunction();
+        }
+        UpdateFunction();
+    }
+
+    #endregion
+
+    #region Private
+
+    /// <summary>
+    /// This function is used to update the current displayed function on the graph.
+    /// </summary>
+    private void UpdateFunction()
+    {
         FunctionLibrary.Function f = FunctionLibrary.GetFunction(function);
         float time = Time.time;
         float step = 2f / resolution;
@@ -78,6 +118,14 @@ public class Graph : MonoBehaviour
             float u = (x + 0.5f) * step - 1f;
             points[i].localPosition = f(u, v, time);
         }
+    }
+
+    /// <summary>
+    /// This function is used to select the next function to display on the graph.
+    /// </summary>
+    private void PickNextFunction()
+    {
+        function = transitionMode == TransitionMode.Cycle ? FunctionLibrary.GetNextFunctionName(function) : FunctionLibrary.GetRandomFunctionNameOtherThan(function);
     }
 
     #endregion

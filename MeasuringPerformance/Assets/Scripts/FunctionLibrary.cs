@@ -38,6 +38,28 @@ public static class FunctionLibrary
     }
 
     /// <summary>
+    /// This function is used to get the next function following the current one in the list of defined function in the <c>FunctionName</c> enumeration.
+    /// </summary>
+    /// <param name="name">A <c>FunctionName</c> enumeration value representing the name of the current function.</param>
+    /// <returns>A <c>FunctionName</c> enumeration value representing the name of the next function following the one given in parameter.</returns>
+    public static FunctionName GetNextFunctionName(FunctionName name)
+    {
+        return (int)name < functions.Length - 1 ? name + 1 : 0;
+    }
+
+    /// <summary>
+    /// This function is used to randomly get a function name got from the list of defined function in the <c>FunctionName</c> enumeration.
+    /// The function avoid selecting the function given in parameter.
+    /// </summary>
+    /// <param name="name">A <c>FunctionName</c> enumeration value representing a function to be discarded by the selection processus.</param>
+    /// <returns>A <c>FunctionName</c> enumeration value representing the name of he randomly selected function.</returns>
+    public static FunctionName GetRandomFunctionNameOtherThan(FunctionName name)
+    {
+        FunctionName choice = (FunctionName)Random.Range(1, functions.Length);
+        return choice == name ? 0 : choice;
+    }
+
+    /// <summary>
     /// This function is used to compute the y position of a point applying a wave effect shapes.
     /// </summary>
     /// <param name="u">A float value representing the u position of the given point.</param>
