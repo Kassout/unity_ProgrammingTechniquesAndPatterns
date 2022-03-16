@@ -60,6 +60,21 @@ public static class FunctionLibrary
     }
 
     /// <summary>
+    /// This function is used to compute the point position transitions between two given functions.
+    /// </summary>
+    /// <param name="u">A float value representing the u position of the given point.</param>
+    /// <param name="v">A float value representing the v position of the given point.</param>
+    /// <param name="t">A float value representing the time at the beginning of this frame.</param>
+    /// <param name="from">A delegate instance representing the current function displayed by the graph.
+    /// <param name="to">A delegate instance representing the targeted function to display by the graph.
+    /// <param name="progress"> A float value representing the duration of the function transition.
+    /// <returns>A Unity <c>Vector3</c> structure representing the computed cardinal coordinates of the given point.</returns>
+
+    public static Vector3 Morph(float u, float v, float t, Function from, Function to, float progress) {
+        return Vector3.LerpUnclamped(from(u, v, t), to(u, v, t), SmoothStep(0f, 1f, progress));
+    }
+
+    /// <summary>
     /// This function is used to compute the y position of a point applying a wave effect shapes.
     /// </summary>
     /// <param name="u">A float value representing the u position of the given point.</param>

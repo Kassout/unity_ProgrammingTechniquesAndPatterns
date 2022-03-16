@@ -42,6 +42,12 @@ public class Graph : MonoBehaviour
     [SerializeField, Min(0f)]
     private float functionDuration = 1f;
 
+    /// <summmary>
+    /// Instance variable <c>transitionDuration</c> represents the duration value of the transition between two functions to display.
+    /// </summary>
+    [SerializeField, Min(0f)]
+    private float transitionDuration = 1f;
+
     /// <summary>
     /// Instance variable <c>points</c> is an array of Unity <c>Transform</c> structures representing the position, rotation and scale of the displayed graph points.
     /// </summary>
@@ -51,6 +57,16 @@ public class Graph : MonoBehaviour
     /// Instance variable <c>duration</c> represents the current displayed duration value of the graph function.
     /// </summary>
     private float duration;
+
+    /// <summary>
+    /// Instance variable <c>transitioning</c> represents the current transitioning status of the graph.
+    /// </summary>
+    private bool transitioning = true;
+
+    /// <summary>
+    /// TODO: add comment
+    /// </summary>
+    private FunctionLibrary.FunctionName transitionFunction;
 
     #endregion
 
@@ -86,12 +102,25 @@ public class Graph : MonoBehaviour
     private void Update()
     {
         duration += Time.deltaTime;
-        if (duration >= functionDuration)
+        if (transitioning) {
+            if (duration >= transitionDuration) {
+                duration -= transitionDuration;
+                transitioning = false;
+            }
+        } 
+        else if (duration >= functionDuration)
         {
             duration -= functionDuration;
+            transitioning = true;
+            transitionFunction = function;
             PickNextFunction();
         }
-        UpdateFunction();
+
+        if (transitioning) {
+            UpdateFunctionTransition();
+        } else {
+            UpdateFunction();
+        }
     }
 
     #endregion
@@ -117,6 +146,30 @@ public class Graph : MonoBehaviour
             }
             float u = (x + 0.5f) * step - 1f;
             points[i].localPosition = f(u, v, time);
+        }
+    }
+
+    /// <summary>
+    /// This function is used to update the current displayed function on the graph applying a transition.
+    /// </summary>
+    private void UpdateFunctionTransition()
+    {
+        FunctionLibrary.Function from = FunctionLibrary.GetFunction(transitionFunction);
+        FunctionLibrary.Function to = FunctionLibrary.GetFunction(function);
+        float progress = duration / transitionDuration;
+        float time = Time.time;
+        float step = 2f / resolution;
+        float v = 0.5f * step - 1f;
+        for (int i = 0, x = 0, z = 0; i < points.Length; i++, x++)
+        {
+            if (x == resolution)
+            {
+                x = 0;
+                z += 1;
+                v = (z + 0.5f) * step - 1f;
+            }
+            float u = (x + 0.5f) * step - 1f;
+            points[i].localPosition = FunctionLibrary.Morph(u, v, time, from, to, progress);
         }
     }
 

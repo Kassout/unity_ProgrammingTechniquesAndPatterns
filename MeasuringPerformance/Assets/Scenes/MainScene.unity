@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657892, g: 0.4964133, b: 0.57481736, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657815, g: 0.49641252, b: 0.5748162, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -620,6 +620,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 0
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
@@ -752,4 +753,6 @@ MonoBehaviour:
   pointPrefab: {fileID: 27933891310748213, guid: c4e5ce61bac006846bb5d5d7d38144f5, type: 3}
   resolution: 50
   function: 0
+  transitionMode: 1
   functionDuration: 3
+  transitionDuration: 1
