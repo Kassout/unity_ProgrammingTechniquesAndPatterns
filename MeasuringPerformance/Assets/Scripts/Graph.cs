@@ -61,10 +61,10 @@ public class Graph : MonoBehaviour
     /// <summary>
     /// Instance variable <c>transitioning</c> represents the current transitioning status of the graph.
     /// </summary>
-    private bool transitioning = true;
+    private bool transitioning;
 
     /// <summary>
-    /// TODO: add comment
+    /// Instance variable <c>transitionFunction</c> is a <c>FunctionName</c> enumeration value representing the name of the function to be transitioned of.
     /// </summary>
     private FunctionLibrary.FunctionName transitionFunction;
 
@@ -102,12 +102,15 @@ public class Graph : MonoBehaviour
     private void Update()
     {
         duration += Time.deltaTime;
-        if (transitioning) {
-            if (duration >= transitionDuration) {
+
+        if (transitioning)
+        {
+            if (duration >= transitionDuration)
+            {
                 duration -= transitionDuration;
                 transitioning = false;
             }
-        } 
+        }
         else if (duration >= functionDuration)
         {
             duration -= functionDuration;
@@ -116,9 +119,12 @@ public class Graph : MonoBehaviour
             PickNextFunction();
         }
 
-        if (transitioning) {
+        if (transitioning)
+        {
             UpdateFunctionTransition();
-        } else {
+        }
+        else
+        {
             UpdateFunction();
         }
     }
@@ -135,13 +141,18 @@ public class Graph : MonoBehaviour
         FunctionLibrary.Function f = FunctionLibrary.GetFunction(function);
         float time = Time.time;
         float step = 2f / resolution;
+
+        // To leave the grid and create graphs with surface curvatures, 
+        // we used input parameters no longer corresponding to x and z coordinates. 
+        // They're now used to create parametric surfaces and named u and v.
         float v = 0.5f * step - 1f;
         for (int i = 0, x = 0, z = 0; i < points.Length; i++, x++)
         {
+            // When we hit resolution number with x: reset x, iterate z and recompute v with the new z value.
             if (x == resolution)
             {
                 x = 0;
-                z += 1;
+                z++;
                 v = (z + 0.5f) * step - 1f;
             }
             float u = (x + 0.5f) * step - 1f;
@@ -157,15 +168,21 @@ public class Graph : MonoBehaviour
         FunctionLibrary.Function from = FunctionLibrary.GetFunction(transitionFunction);
         FunctionLibrary.Function to = FunctionLibrary.GetFunction(function);
         float progress = duration / transitionDuration;
+
         float time = Time.time;
         float step = 2f / resolution;
+
+        // To leave the grid and create graphs with surface curvatures, 
+        // we used input parameters no longer corresponding to x and z coordinates. 
+        // They're now used to create parametric surfaces and named u and v.
         float v = 0.5f * step - 1f;
         for (int i = 0, x = 0, z = 0; i < points.Length; i++, x++)
         {
+            // When we hit resolution number with x: reset x, iterate z and recompute v with the new z value.
             if (x == resolution)
             {
                 x = 0;
-                z += 1;
+                z++;
                 v = (z + 0.5f) * step - 1f;
             }
             float u = (x + 0.5f) * step - 1f;
