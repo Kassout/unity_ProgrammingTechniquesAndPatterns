@@ -28,6 +28,8 @@ Shader "Graph/Point Surface" {
 
         // use inout to indicates that the object both passed o the function and used for the result of the function.
         void ConfigureSurface (Input input, inout SurfaceOutputStandard surface) {
+            // Albedo represents the shader color.
+            // Use saturate to return a value clamped between 0 and 1.
             surface.Albedo = saturate(input.worldPos * 0.5 + 0.5);
             surface.Smoothness = _Smoothness;
         }

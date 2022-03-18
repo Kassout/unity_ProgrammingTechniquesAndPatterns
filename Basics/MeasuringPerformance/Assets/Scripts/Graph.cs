@@ -64,7 +64,7 @@ public class Graph : MonoBehaviour
     private bool transitioning;
 
     /// <summary>
-    /// Instance variable <c>transitionFunction</c> is a <c>FunctionName</c> enumeration value representing the name of the function to be transitioned of.
+    /// Instance variable <c>transitionFunction</c> is a <c>FunctionName</c> enumeration value representing the current function to transition from.
     /// </summary>
     private FunctionLibrary.FunctionName transitionFunction;
 

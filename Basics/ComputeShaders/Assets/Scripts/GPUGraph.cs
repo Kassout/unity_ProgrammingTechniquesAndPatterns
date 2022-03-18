@@ -10,19 +10,19 @@ public class GPUGraph : MonoBehaviour
     const int maxResolution = 1000;
 
     /// <summmary>
-    /// TODO: add comment
+    /// Instance variable <c>computeShader</c> is a Unity <c>ComputeShader</c> object representing the shader program to execute GPU computations.
     /// </summary>
     [SerializeField]
     private ComputeShader computeShader;
 
     /// <summmary>
-    /// TODO: add comment
+    /// Instance variable <c>material</c> is a Unity <c>Material</c> object representing the rendered material of our graph points.
     /// </summary>
     [SerializeField]
     private Material material;
 
     /// <summmary>
-    /// TODO: add comment
+    /// Instance variable <c>mesh</c> is a Unity <c>Mesh</c> object representing the mesh structure of our graph points.
     /// </summary>
     [SerializeField]
     private Mesh mesh;
@@ -73,35 +73,38 @@ public class GPUGraph : MonoBehaviour
     private bool transitioning = true;
 
     /// <summary>
-    /// TODO: add comment
+    /// Instance variable <c>transitionFunction</c> is a <c>FunctionName</c> enumeration value representing the current function to transition from.
     /// </summary>
     private FunctionLibrary.FunctionName transitionFunction;
 
     /// <summary>
-    /// TODO: add comment
+    /// Instance variable <c>positionsBuffer</c> is a Unity <c>ComputeBuffer</c> object representing a memory program space to store the graph point positions on the GPU.
     /// </summary>
     private ComputeBuffer positionsBuffer;
 
     /// <summary>
-    /// TODO: add comment
+    /// Instance variable <c>positionsId</c> represents the identifier value of a <c>_Positions</c> shader property.
     /// </summary>
     private static readonly int positionsId = Shader.PropertyToID("_Positions");
 
     /// <summary>
-    /// TODO: add comment
+    /// Instance variable <c>resolutionId</c> represents the identifier value of a <c>_Resolution</c> shader property.
     /// </summary>
     private static readonly int resolutionId = Shader.PropertyToID("_Resolution");
 
     /// <summary>
-    /// TODO: add comment
+    /// Instance variable <c>stepId</c> represents the identifier value of a <c>_Step</c> shader property.
     /// </summary>
     private static readonly int stepId = Shader.PropertyToID("_Step");
 
     /// <summary>
-    /// TODO: add comment
+    /// Instance variable <c>timeId</c> represents the identifier value of a <c>_Time</c> shader property.
     /// </summary>
     private static readonly int timeId = Shader.PropertyToID("_Time");
 
+    /// <summary>
+    /// Instance variable <c>transitionProgressId</c> represents the identifier value of a <c>_TransitionProgess</c> shader property.
+    /// </summary>
     private static readonly int transitionProgressId = Shader.PropertyToID("_TransitionProgess");
 
     #endregion
@@ -158,24 +161,34 @@ public class GPUGraph : MonoBehaviour
     private void UpdateFunctionOnGPU()
     {
         float step = 2f / resolution;
+
+        // Communicate parameter values to the compute shader program.
         computeShader.SetInt(resolutionId, resolution);
         computeShader.SetFloat(stepId, step);
         computeShader.SetFloat(timeId, Time.time);
-
         if (transitioning)
         {
             computeShader.SetFloat(transitionProgressId, Mathf.SmoothStep(0f, 1f, duration / transitionDuration));
         }
 
+        // Find the kernel associated with the function/transition function we are looking for.
+        // Kernel are functions of the shader program, you can call them by using ids associate to them.
         int kernelIndex = (int)function + (int)(transitioning ? transitionFunction : function) * FunctionLibrary.FunctionCount;
+        // Link the positions buffer to the positions property of one kernel of the compute shader.
         computeShader.SetBuffer(kernelIndex, positionsId, positionsBuffer);
-
+        // Groups in a number of thread work partitions for the GPU to instructed to execute a compute shader function.
+        // GPU schedules groups to run independently and in parallel.
+        // Here we have 8 threads per group so to perform our position computation we will need resolution value / 8 threads, groups.
         int groups = Mathf.CeilToInt(resolution / 8f);
+        // Invoke dispatch to run the chosen kernel. Other parameters are the number of groups for each dimension (x, y, z);
         computeShader.Dispatch(kernelIndex, groups, groups, 1);
 
+        // Link the positions buffer to the positions property of the material.
         material.SetBuffer(positionsId, positionsBuffer);
         material.SetFloat(stepId, step);
         Bounds bounds = new Bounds(Vector3.zero, Vector3.one * (2f + 2f / resolution));
+
+        // Draw mesh using the different properties of given material and bounds.
         Graphics.DrawMeshInstancedProcedural(mesh, 0, material, bounds, resolution * resolution);
     }
 

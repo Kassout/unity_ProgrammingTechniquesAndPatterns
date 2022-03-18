@@ -512,6 +512,7 @@ MonoBehaviour:
     y: -4.5
     width: 9
     height: 9
+  bounciness: 0.5
 --- !u!96 &1012120154
 TrailRenderer:
   serializedVersion: 2
