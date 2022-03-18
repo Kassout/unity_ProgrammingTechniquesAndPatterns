@@ -741,7 +741,7 @@ MonoBehaviour:
   resolution: 50
   function: 0
   transitionMode: 1
-  functionDuration: 1
+  functionDuration: 3
   transitionDuration: 1
 --- !u!4 &1437580376
 Transform:
