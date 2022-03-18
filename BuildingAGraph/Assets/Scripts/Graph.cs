@@ -33,18 +33,25 @@ public class Graph : MonoBehaviour
     /// </summary>
     private void Awake()
     {
+        // Compute distance separation between points.
         float step = 2f / resolution;
         Vector3 position = Vector3.zero;
+
+        // Scale cube(=points) dimensions depending graph step.
         Vector3 scale = Vector3.one * step;
+
+        // Compute number of points depending graph resolution.
         points = new Transform[resolution];
 
+        // Instanciate cubes(=points)
         for (int i = 0; i < points.Length; i++)
         {
             Transform point = points[i] = Instantiate(pointPrefab);
 
+            // Distribute cube positions alongside x.
             position.x = (i + 0.5f) * step - 1f;
-
             point.localPosition = position;
+
             point.localScale = scale;
             point.SetParent(transform, false);
         }
@@ -56,6 +63,8 @@ public class Graph : MonoBehaviour
     private void Update()
     {
         float time = Time.time;
+
+        // For each point on the graph, compute their y position depending of their position alongside x and the current time.
         for (int i = 0; i < points.Length; i++)
         {
             Transform point = points[i];

@@ -16,7 +16,7 @@ public class Graph : MonoBehaviour
     /// <summary>
     /// Instance variable <c>resolution</c> represents the resolution value of the graph.
     /// </summary>
-    [SerializeField, Range(10, 100)]
+    [SerializeField, Range(10, 200)]
     private int resolution = 10;
 
     /// <summmary>
