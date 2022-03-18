@@ -717,7 +717,7 @@ GameObject:
   - component: {fileID: 1437580376}
   - component: {fileID: 1437580375}
   m_Layer: 0
-  m_Name: GraphGPU
+  m_Name: GPU Graph
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -736,9 +736,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   computeShader: {fileID: 7200000, guid: 04f3cd98b6b212d4fbda4bda387f6c32, type: 3}
-  material: {fileID: 2100000, guid: 84edeaf90de595348ac7f98de6c39c97, type: 2}
+  material: {fileID: 2100000, guid: 0b901cf21b915d9439c59855f9d24fb8, type: 2}
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  resolution: 1000
+  resolution: 50
   function: 0
   transitionMode: 1
   functionDuration: 1

@@ -7,6 +7,8 @@ public class GPUGraph : MonoBehaviour
 {
     #region Fields / Properties
 
+    const int maxResolution = 1000;
+
     /// <summmary>
     /// TODO: add comment
     /// </summary>
@@ -28,7 +30,7 @@ public class GPUGraph : MonoBehaviour
     /// <summary>
     /// Instance variable <c>resolution</c> represents the resolution value of the graph.
     /// </summary>
-    [SerializeField, Range(10, 1000)]
+    [SerializeField, Range(10, maxResolution)]
     private int resolution = 10;
 
     /// <summmary>
@@ -100,6 +102,8 @@ public class GPUGraph : MonoBehaviour
     /// </summary>
     private static readonly int timeId = Shader.PropertyToID("_Time");
 
+    private static readonly int transitionProgressId = Shader.PropertyToID("_TransitionProgess");
+
     #endregion
 
     #region MonoBehavior
@@ -110,7 +114,7 @@ public class GPUGraph : MonoBehaviour
     private void OnEnable()
     {
         // To avoid objects getting destroyed on hot reload.
-        positionsBuffer = new ComputeBuffer(resolution * resolution, 3 * 4);
+        positionsBuffer = new ComputeBuffer(maxResolution * maxResolution, 3 * 4);
     }
 
     /// <summary>
@@ -158,10 +162,16 @@ public class GPUGraph : MonoBehaviour
         computeShader.SetFloat(stepId, step);
         computeShader.SetFloat(timeId, Time.time);
 
-        computeShader.SetBuffer(0, positionsId, positionsBuffer);
+        if (transitioning)
+        {
+            computeShader.SetFloat(transitionProgressId, Mathf.SmoothStep(0f, 1f, duration / transitionDuration));
+        }
+
+        int kernelIndex = (int)function + (int)(transitioning ? transitionFunction : function) * FunctionLibrary.FunctionCount;
+        computeShader.SetBuffer(kernelIndex, positionsId, positionsBuffer);
 
         int groups = Mathf.CeilToInt(resolution / 8f);
-        computeShader.Dispatch(0, groups, groups, 1);
+        computeShader.Dispatch(kernelIndex, groups, groups, 1);
 
         material.SetBuffer(positionsId, positionsBuffer);
         material.SetFloat(stepId, step);
