@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.unity.burst": "1.4.11",
     "com.unity.collab-proxy": "1.5.7",
     "com.unity.ide.vscode": "1.2.3",
     "com.unity.probuilder": "4.5.2",
