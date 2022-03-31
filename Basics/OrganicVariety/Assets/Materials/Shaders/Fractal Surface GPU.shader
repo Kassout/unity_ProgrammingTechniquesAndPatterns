@@ -1,12 +1,6 @@
 // Shader definition
 Shader "Fractal/Fractal Surface GPU" {
 
-   // Add configuration option appear in the Unity editor.
-    Properties {
-        _BaseColor ("Base Color", Color) = (1.0, 1.0, 1.0, 1.0)
-        _Smoothness ("Smoothness", Range(0, 1)) = 0.5
-    }
-
     // SubShader definition
     SubShader {
         // Code section
@@ -34,14 +28,13 @@ Shader "Fractal/Fractal Surface GPU" {
             float3 worldPos;
         };
 
-        float4 _BaseColor;
         float _Smoothness;
 
         // use inout to indicates that the object both passed o the function and used for the result of the function.
         void ConfigureSurface (Input input, inout SurfaceOutputStandard surface) {
             // Albedo represents the shader color.
-            surface.Albedo = _BaseColor.rgb;
-            surface.Smoothness = _Smoothness;
+            surface.Albedo = GetFractalColor().rgb;
+            surface.Smoothness = GetFractalColor().a;
         }
 
         ENDCG

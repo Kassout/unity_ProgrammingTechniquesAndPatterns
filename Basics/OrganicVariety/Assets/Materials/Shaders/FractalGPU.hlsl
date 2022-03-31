@@ -15,10 +15,29 @@ void ConfigureProcedural () {
 	#endif
 }
 
-void ShaderGraphFunction_float (float3 In, out float3 Out) {
-	Out = In;
+float4 _ColorA, _ColorB;
+// Offset values to support each level having a different starting color.
+float4 _SequenceNumbers;
+
+float4 GetFractalColor() {
+	#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
+		float4 color;
+		// Compute a sequence to color fractal parts so it looks organic.
+		color.rgb = lerp(_ColorA.rgb, _ColorB.rgb, frac(unity_InstanceID * _SequenceNumbers.x + _SequenceNumbers.y));
+		// Use color transparency variable as a smoothness variable because we don't use transparency in our program.
+		color.a = lerp(_ColorA.a, _ColorB.a, frac(unity_InstanceID * _SequenceNumbers.z + _SequenceNumbers.w));
+		return color;
+	#else
+		return _ColorA;
+	#endif
 }
 
-void ShaderGraphFunction_half (half3 In, out half3 Out) {
+void ShaderGraphFunction_float (float3 In, out float3 Out, out float4 FractalColor) {
 	Out = In;
+	FractalColor = GetFractalColor();
+}
+
+void ShaderGraphFunction_half (half3 In, out half3 Out, out half4 FractalColor) {
+	Out = In;
+	FractalColor = GetFractalColor();
 }

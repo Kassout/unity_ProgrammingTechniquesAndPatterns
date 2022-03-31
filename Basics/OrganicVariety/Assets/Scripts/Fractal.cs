@@ -8,6 +8,7 @@ using UnityEngine;
 using static Unity.Mathematics.math;
 // Indicate how to interpret the types of quaternion because of methods name conflicts with Mathf library.
 using quaternion = Unity.Mathematics.quaternion;
+using Random = UnityEngine.Random;
 
 /// <summary>
 /// Class <c>Fractal</c> is a Unity script used to manage the fractal generation behavior.
@@ -21,9 +22,9 @@ public class Fractal : MonoBehaviour
     /// </summary>
     private struct FractalPart
     {
-        public float3 direction, worldPosition;
+        public float3 worldPosition;
         public quaternion rotation, worldRotation;
-        public float spinAngle;
+        public float maxSagAngle, spinAngle, spinVelocity;
     }
 
     /// <summary>
@@ -34,8 +35,8 @@ public class Fractal : MonoBehaviour
     [BurstCompile(FloatPrecision.Standard, FloatMode.Fast, CompileSynchronously = true)]
     private struct UpdateFractalLevelJob : IJobFor
     {
-        public float spinAngleDelta;
         public float scale;
+        public float deltaTime;
 
         [ReadOnly]
         public NativeArray<FractalPart> parents;
@@ -48,10 +49,26 @@ public class Fractal : MonoBehaviour
         {
             FractalPart parent = parents[i / 5];
             FractalPart part = parts[i];
-            part.spinAngle += spinAngleDelta;
+            part.spinAngle += part.spinVelocity * deltaTime;
+
+            // Find the sagging rotation axis.
+            float3 upAxis = mul(mul(parent.worldRotation, part.rotation), up());
+            float3 sagAxis = cross(up(), upAxis);
+
+            // Don't apply sagging to a straight up part => system in equilibrium.
+            float sagMagnitude = length(sagAxis);
+            quaternion baseRotation;
+            if (sagMagnitude > 0f) {
+                sagAxis /= sagMagnitude;
+                quaternion sagRotation = quaternion.AxisAngle(sagAxis, part.maxSagAngle * sagMagnitude);
+                baseRotation = mul(sagRotation, parent.worldRotation);
+            } else {
+                baseRotation = parent.worldRotation;
+            }
+
             // mul == Multiplication() from Mathematics library.
-            part.worldRotation = mul(parent.worldRotation, mul(part.rotation, quaternion.RotateY(part.spinAngle)));
-            part.worldPosition = parent.worldPosition + mul(parent.worldRotation, 1.5f * scale * part.direction);
+            part.worldRotation = mul(baseRotation, mul(part.rotation, quaternion.RotateY(part.spinAngle)));
+            part.worldPosition = parent.worldPosition + mul(part.worldRotation, float3(0f, 1.5f * scale, 0f));
             parts[i] = part;
 
             // To create an uniform vector with the Mathematics library, use float3(value).
@@ -73,7 +90,8 @@ public class Fractal : MonoBehaviour
     /// <summary>
     /// Instance variable <c>depth</c> represents the depth value of fractal generation.
     /// </summary>
-    [SerializeField, Range(1, 8)]
+    /// Depth start at least at 2 to avoid some division by 0 errors which can happened with a depth of 0.
+    [SerializeField, Range(3, 8)]
     private int depth = 4;
 
     /// <summary>
@@ -82,6 +100,12 @@ public class Fractal : MonoBehaviour
     [SerializeField]
     private Mesh mesh;
 
+        /// <summary>
+    /// Instance variable <c>leafMesh</c> is a Unity <c>Mesh</c> component representing the mesh of the model of the fractal leaf parts.
+    /// </summary>
+    [SerializeField]
+    private Mesh leafMesh;
+
     /// <summary>
     /// Instance variable <c>material</c> is a Unity <c>Material</c> object representing the material of the model of the fractal parts.
     /// </summary>
@@ -89,12 +113,58 @@ public class Fractal : MonoBehaviour
     private Material material;
 
     /// <summary>
-    /// Instance variable <c>directions</c> is a list of Unity <c>float3</c> structures representing the different fractal parts generation directions.
+    /// Instance variable <c>gradientA</c> is a Unity <c>Gradient</c> object representing the first gradient color sent to the fractal shader to paint the different fractal level.
     /// </summary>
-    private static float3[] directions = {
-        // Replace Vector3.left()/.right() functions with math library functions equivalent.
-        up(), right(), left(), forward(), back()
-    };
+    [SerializeField]
+    private Gradient gradientA;
+
+    /// <summary>
+    /// Instance variable <c>gradientB</c> is a Unity <c>Gradient</c> object representing the second gradient color sent to the fractal shader to paint the different fractal level.
+    /// </summary>
+    [SerializeField]
+    private Gradient gradientB;
+
+    /// <summary>
+    /// Instance variable <c>leafColorA</c> is a Unity <c>Color</c> structure representing the first leaf color sent to the fractal shader to paint the leaf instances of the fractal.
+    /// </summary>
+    [SerializeField]
+    private Color leafColorA;
+
+    /// <summary>
+    /// Instance variable <c>leafColorB</c> is a Unity <c>Color</c> structure representing the second leaf color sent to the fractal shader to paint the leaf instances of the fractal.
+    /// </summary>
+    [SerializeField]
+    private Color leafColorB;
+
+    /// <summary>
+    /// Instance variable <c>maxSagAngleA</c> represent the first maximum sagging angle value allowed for a fractal part.
+    /// </summary>
+    [SerializeField, Range(0f, 90f)]
+    private float maxSagAngleA = 15f;
+
+    /// <summary>
+    /// Instance variable <c>maxSagAngleB</c> represent the second maximum sagging angle value allowed for a fractal part.
+    /// </summary>
+    [SerializeField, Range(0f, 90f)]
+    private float maxSagAngleB = 25f;
+
+    /// <summary>
+    /// Instance variable <c>spinVelocityA</c> represent the first maximum spin velocity value allowed for a fractal part.
+    /// </summary>
+    [SerializeField, Range(0f, 90f)]
+    private float spinVelocityA = 20f;
+    
+    /// <summary>
+    /// Instance variable <c>spinVelocityB</c> represent the second maximum spin velocity value allowed for a fractal part.
+    /// </summary>
+    [SerializeField, Range(0f, 90f)]
+    private float spinVelocityB = 25f;
+
+    /// <summary>
+    /// Instance variable <c>reverseSpinChance</c> represent the chance value for a fractal part spin to reverse.
+    /// </summary>  
+    [SerializeField, Range(0f, 1f)]
+    private float reverseSpinChance = 0.25f;
 
     /// <summary>
     /// Instance variable <c>rotations</c> is a list of Unity <c>quaternion</c> structures representing the different fractal parts generation rotations.
@@ -117,9 +187,29 @@ public class Fractal : MonoBehaviour
     private static readonly int matricesId = Shader.PropertyToID("_Matrices");
 
     /// <summary>
+    /// Instance variable <c>colorAId</c> represents the identifier value of a <c>_ColorA</c> shader property.
+    /// </summary>
+    private static readonly int colorAId = Shader.PropertyToID("_ColorA");
+
+    /// <summary>
+    /// Instance variable <c>colorBId</c> represents the identifier value of a <c>_ColorB</c> shader property.
+    /// </summary>
+    private static readonly int colorBId = Shader.PropertyToID("_ColorB");
+
+    /// <summary>
+    /// Instance variable <c>sequenceNumbersId</c> represents the identifier value of a <c>_SequenceNumbers</c> shader property.
+    /// </summary>
+    private static readonly int sequenceNumbersId = Shader.PropertyToID("_SequenceNumbers");
+
+    /// <summary>
     /// Instance variable <c>propertyBlock</c> is a Unity <c>MaterialPropertyBlock</c> object representing the material draw command manager of the fractal compute buffer.
     /// </summary>
     private static MaterialPropertyBlock propertyBlock;
+
+    /// <summary>
+    /// Instance variable <c>sequenceNumbers</c> is a Unity <c>Vector4</c> structure representing TODO: add comment.
+    /// </summary>
+    private Vector4[] sequenceNumbers;
 
     #endregion
 
@@ -138,6 +228,9 @@ public class Fractal : MonoBehaviour
 
         // Initialize compute buffers.
         matricesBuffers = new ComputeBuffer[depth];
+
+        sequenceNumbers = new Vector4[depth];
+
         // The stride represents the number of bytes needed to store and manipulate the object type of the parameter passed to the compute buffers.
         // Here a 3x4 matrix has 12 float values, so the stride of the buffers is 12 x 4 bytes.
         int stride = 12 * 4;
@@ -149,6 +242,8 @@ public class Fractal : MonoBehaviour
             parts[i] = new NativeArray<FractalPart>(length, Allocator.Persistent);
             matrices[i] = new NativeArray<float3x4>(length, Allocator.Persistent);
             matricesBuffers[i] = new ComputeBuffer(length, stride);
+            // Setup an arbitrary and different sequence numbers per level. => For fractal parts painting color and smoothness choices.
+            sequenceNumbers[i] = new Vector4(Random.value, Random.value, Random.value, Random.value);
         }
 
         // Create first element (root).
@@ -186,6 +281,7 @@ public class Fractal : MonoBehaviour
         parts = null;
         matrices = null;
         matricesBuffers = null;
+        sequenceNumbers = null;
     }
 
     /// <summary>
@@ -207,12 +303,11 @@ public class Fractal : MonoBehaviour
     private void Update()
     {
         // To animate the fractal
-        // Value converted to radians after implement Unity.Mathematics library use.
-        float spinAngleDelta = 0.125f * PI * Time.deltaTime;
+        float deltaTime = Time.deltaTime;
 
         // Initialize root fractal parts
         FractalPart rootPart = parts[0][0];
-        rootPart.spinAngle += spinAngleDelta;
+        rootPart.spinAngle += rootPart.spinAngle * deltaTime;
         rootPart.worldRotation = mul(transform.rotation, mul(rootPart.rotation, quaternion.RotateY(rootPart.spinAngle)));
         rootPart.worldPosition = transform.position;
         parts[0][0] = rootPart;
@@ -236,7 +331,7 @@ public class Fractal : MonoBehaviour
             // Initialize UpdateFractalLevel job.
             jobHandle = new UpdateFractalLevelJob
             {
-                spinAngleDelta = spinAngleDelta,
+                deltaTime = deltaTime,
                 scale = scale,
                 parents = parts[li - 1],
                 parts = parts[li],
@@ -254,17 +349,40 @@ public class Fractal : MonoBehaviour
         // Setup bounds to define the drawing area of the fractal available to the GPU.
         // If you compute the maximum diameter of the fractal, with a diameter of 1 for the root element, you tend to 3 on infinite depth level. 
         Bounds bounds = new Bounds(rootPart.worldPosition, 3f * float3(objectScale));
+
+        // the fractal leaves are supposed to be the last level elements.
+        int leafIndex = matricesBuffers.Length - 1;
         for (int i = 0; i < matricesBuffers.Length; i++)
         {
             ComputeBuffer buffer = matricesBuffers[i];
             // Communicate parameter values to the compute buffer.
             buffer.SetData(matrices[i]);
+
+            // Dissociate fractal leaf level colors/mesh models from the other fractal level
+            Color colorA, colorB;
+            Mesh instanceMesh;
+            if (i == leafIndex) {
+                colorA = leafColorA;
+                colorB = leafColorB;
+                instanceMesh = leafMesh;
+            } else {
+                // Change colors depending depth level of the current fractal generation loop.
+                // Use 2 gradients to mix colors and level
+                float gradientInterpolator = i / (matricesBuffers.Length - 1f);
+                colorA = gradientA.Evaluate(gradientInterpolator);
+                colorB = gradientB.Evaluate(gradientInterpolator);
+                instanceMesh = mesh;
+            }
+            propertyBlock.SetColor(colorAId, colorA);
+            propertyBlock.SetColor(colorBId, colorB);
+            
             // Link the transformation matrix buffer to the matrices property of the material property block.
             // Using material property block instead of direct material will make Unity copy the configuration that the block has at that time and use it for specific draw command
             // Overrulling what was set for the material.
             propertyBlock.SetBuffer(matricesId, buffer);
+            propertyBlock.SetVector(sequenceNumbersId, sequenceNumbers[i]);
             // Draw mesh using the different properties of given material and bounds.
-            Graphics.DrawMeshInstancedProcedural(mesh, 0, material, bounds, buffer.count, propertyBlock);
+            Graphics.DrawMeshInstancedProcedural(instanceMesh, 0, material, bounds, buffer.count, propertyBlock);
         }
     }
 
@@ -277,8 +395,9 @@ public class Fractal : MonoBehaviour
     /// </summary>
     private FractalPart CreatePart(int childIndex) => new FractalPart
     {
-        direction = directions[childIndex],
-        rotation = rotations[childIndex]
+        maxSagAngle = radians(Random.Range(maxSagAngleA, maxSagAngleB)),
+        rotation = rotations[childIndex],
+        spinVelocity = (Random.value < reverseSpinChance ? -1f : 1f) * radians(Random.Range(spinVelocityA, spinVelocityB))
     };
 
     #endregion
